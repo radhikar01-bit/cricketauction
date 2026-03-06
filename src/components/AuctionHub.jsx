@@ -21,8 +21,36 @@ const AuctionHub = ({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
 
-    // --- NEW STATE FOR SOLD OVERLAY ---
+    // --- STATE FOR SOLD OVERLAY ---
     const [soldOverlay, setSoldOverlay] = useState({ show: false, playerName: '', teamName: '', teamColor: '' });
+    
+    // Track the length of sold players to trigger the modal for everyone
+    const prevSoldLength = useRef(soldPlayers?.length || 0);
+
+    // --- GLOBAL SOLD NOTIFICATION LOGIC ---
+    useEffect(() => {
+        // If a new player is added to the soldPlayers array (synced from cloud)
+        if (soldPlayers && soldPlayers.length > prevSoldLength.current) {
+            const lastSold = soldPlayers[soldPlayers.length - 1];
+            
+            // Trigger the modal for ALL users
+            setSoldOverlay({
+                show: true,
+                playerName: lastSold.name,
+                teamName: lastSold.soldTo,
+                teamColor: lastSold.teamColor || 'bg-blue-600'
+            });
+
+            // Auto-hide after 5 seconds
+            const timer = setTimeout(() => {
+                setSoldOverlay(prev => ({ ...prev, show: false }));
+            }, 5000);
+
+            prevSoldLength.current = soldPlayers.length;
+            return () => clearTimeout(timer);
+        }
+        prevSoldLength.current = soldPlayers?.length || 0;
+    }, [soldPlayers]);
 
     // --- ROUND TRANSITION LOGIC ---
     const [showRoundOverlay, setShowRoundOverlay] = useState(false);
@@ -92,20 +120,6 @@ const AuctionHub = ({
 
         if (highestBidderId) {
             const winningTeam = teams.find(t => t.id === highestBidderId);
-            
-            // Trigger the Sold Notification
-            setSoldOverlay({
-                show: true,
-                playerName: currentPlayer.name,
-                teamName: winningTeam.name,
-                teamColor: winningTeam.color
-            });
-
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                setSoldOverlay(prev => ({ ...prev, show: false }));
-            }, 5000);
-
             const updatedTeams = teams.map(t => {
                 if (t.id === highestBidderId) {
                     return {
@@ -117,10 +131,19 @@ const AuctionHub = ({
                 return t;
             });
 
+            // Sync to Cloud: This will trigger the useEffect for ALL users
             syncToCloud({
                 ...resetAuctionState,
                 teams: updatedTeams,
-                soldPlayers: [...(soldPlayers || []), { ...currentPlayer, soldTo: winningTeam.name, price: currentBid }],
+                soldPlayers: [
+                    ...(soldPlayers || []), 
+                    { 
+                        ...currentPlayer, 
+                        soldTo: winningTeam.name, 
+                        price: currentBid,
+                        teamColor: winningTeam.color // Store color so others can see it in modal
+                    }
+                ],
                 currentIndex: currentIndex + 1,
             });
         } else {
@@ -131,7 +154,7 @@ const AuctionHub = ({
     return (
         <div className="min-h-screen bg-transparent text-white font-sans relative overflow-hidden">
 
-            {/* --- SOLD PLAYER OVERLAY (The new modal) --- */}
+            {/* --- SOLD PLAYER OVERLAY (Global Modal) --- */}
             {soldOverlay.show && (
                 <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/80 backdrop-blur-2xl transition-all duration-500 animate-in fade-in">
                     <div className="text-center p-12 rounded-[3rem] border border-white/20 shadow-[0_0_100px_rgba(255,255,255,0.1)]">
@@ -185,7 +208,6 @@ const AuctionHub = ({
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        {/* LEFT: PLAYER CARD */}
                         <div className="lg:col-span-5 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                             <PlayerCard
                                 player={currentPlayer}
@@ -199,9 +221,7 @@ const AuctionHub = ({
                             />
                         </div>
 
-                        {/* RIGHT: ARENA */}
                         <div className="lg:col-span-7 flex flex-col gap-6">
-                            {/* LIVE BID DISPLAY */}
                             <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
                                 <p className="text-blue-400 font-black tracking-[0.5em] text-[10px] uppercase mb-3">Live Valuation</p>
@@ -219,7 +239,6 @@ const AuctionHub = ({
                                 )}
                             </div>
 
-                            {/* DUEL GRID */}
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                 {teams.map(team => {
                                     const isDuelist = (activeDuelists || []).includes(team.id);
@@ -252,7 +271,6 @@ const AuctionHub = ({
                                 })}
                             </div>
 
-                            {/* ADMIN ACTION */}
                             {user.role === 'ADMIN' && (
                                 <button
                                     onClick={handleHammerDown}
