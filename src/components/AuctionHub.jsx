@@ -21,6 +21,9 @@ const AuctionHub = ({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
 
+    // --- NEW STATE FOR SOLD OVERLAY ---
+    const [soldOverlay, setSoldOverlay] = useState({ show: false, playerName: '', teamName: '', teamColor: '' });
+
     // --- ROUND TRANSITION LOGIC ---
     const [showRoundOverlay, setShowRoundOverlay] = useState(false);
     const prevRoundRef = useRef(currentRound);
@@ -89,6 +92,20 @@ const AuctionHub = ({
 
         if (highestBidderId) {
             const winningTeam = teams.find(t => t.id === highestBidderId);
+            
+            // Trigger the Sold Notification
+            setSoldOverlay({
+                show: true,
+                playerName: currentPlayer.name,
+                teamName: winningTeam.name,
+                teamColor: winningTeam.color
+            });
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                setSoldOverlay(prev => ({ ...prev, show: false }));
+            }, 5000);
+
             const updatedTeams = teams.map(t => {
                 if (t.id === highestBidderId) {
                     return {
@@ -112,10 +129,34 @@ const AuctionHub = ({
     };
 
     return (
-        /* CHANGE: Changed bg-slate-950 to bg-transparent so the App.jsx background shows */
         <div className="min-h-screen bg-transparent text-white font-sans relative overflow-hidden">
 
-            {/* --- ROUND OVERLAY (Glassmorphism) --- */}
+            {/* --- SOLD PLAYER OVERLAY (The new modal) --- */}
+            {soldOverlay.show && (
+                <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/80 backdrop-blur-2xl transition-all duration-500 animate-in fade-in">
+                    <div className="text-center p-12 rounded-[3rem] border border-white/20 shadow-[0_0_100px_rgba(255,255,255,0.1)]">
+                        <div className="text-6xl mb-6">🔨</div>
+                        <h2 className="text-5xl md:text-7xl font-[1000] italic uppercase tracking-tighter text-white mb-4">
+                            CONGRATULATIONS
+                        </h2>
+                        <div className={`inline-block px-8 py-4 rounded-2xl text-2xl md:text-4xl font-black uppercase italic mb-8 shadow-2xl ${soldOverlay.teamColor}`}>
+                            {soldOverlay.playerName}
+                        </div>
+                        <p className="text-xl md:text-2xl font-bold text-slate-300">
+                            is now a part of <span className="text-white underline decoration-blue-500 underline-offset-8">{soldOverlay.teamName}</span>
+                        </p>
+                        
+                        <button 
+                            onClick={() => setSoldOverlay(prev => ({ ...prev, show: false }))}
+                            className="mt-12 text-xs font-black uppercase tracking-[0.3em] text-slate-500 hover:text-white transition-colors"
+                        >
+                            [ Close Details ]
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* --- ROUND OVERLAY --- */}
             {showRoundOverlay && (
                 <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/40 backdrop-blur-xl transition-all duration-700">
                     <div className="text-center animate-in zoom-in slide-in-from-bottom-10 duration-500">
@@ -144,8 +185,7 @@ const AuctionHub = ({
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                        {/* LEFT: PLAYER CARD (Added subtle shadow) */}
+                        {/* LEFT: PLAYER CARD */}
                         <div className="lg:col-span-5 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                             <PlayerCard
                                 player={currentPlayer}
@@ -161,8 +201,7 @@ const AuctionHub = ({
 
                         {/* RIGHT: ARENA */}
                         <div className="lg:col-span-7 flex flex-col gap-6">
-
-                            {/* LIVE BID DISPLAY (Glassmorphism) */}
+                            {/* LIVE BID DISPLAY */}
                             <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
                                 <p className="text-blue-400 font-black tracking-[0.5em] text-[10px] uppercase mb-3">Live Valuation</p>
