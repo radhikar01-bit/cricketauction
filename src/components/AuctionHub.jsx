@@ -21,10 +21,10 @@ const AuctionHub = ({
 }) => {
     const [soldOverlay, setSoldOverlay] = useState({ show: false, playerName: '', teamName: '', teamColor: '' });
     const [phaseOverlay, setPhaseOverlay] = useState(false);
+    const [isNewPlayer, setIsNewPlayer] = useState(false); // New state for animation
     const prevSoldLength = useRef(soldPlayers?.length || 0);
 
     // --- SPECIAL LOGIC: ID SEQUENCE TRACKER ---
-    // Tracks the ID of the last player seen to detect when the pool resets/loops
     const lastSeenPlayerId = useRef(null);
 
     // --- STANDARDIZED PRICING CONSTANTS ---
@@ -32,10 +32,22 @@ const AuctionHub = ({
     const BID_INCREMENT = 10000;
     const SQUAD_LIMIT = 8;
 
+    // --- MOBILE SCROLL & NEW PLAYER ANIMATION ---
+    useEffect(() => {
+        if (currentPlayer) {
+            // 1. Reset scroll to top for mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // 2. Trigger the "Pulse" animation flag
+            setIsNewPlayer(true);
+            const timer = setTimeout(() => setIsNewPlayer(false), 800);
+            return () => clearTimeout(timer);
+        }
+    }, [currentPlayer?.id]);
+
     // --- ROUND CHANGE DETECTION (ID LOGIC) ---
     useEffect(() => {
         if (currentPlayer && lastSeenPlayerId.current !== null) {
-            // Logic: If the incoming ID is smaller than the previous one, a new round has started
             if (Number(currentPlayer.id) < Number(lastSeenPlayerId.current)) {
                 setPhaseOverlay(true);
             }
@@ -101,14 +113,11 @@ const AuctionHub = ({
         syncToCloud({ activeDuelists: newDuelists, gaveUpTeams: newGaveUp });
     };
 
-   const handleHammerDown = () => {
+    const handleHammerDown = () => {
         if (user.role !== 'ADMIN' || !currentPlayer) return;
 
-        // --- IMPROVED LOGIC: Check if this is truly the last player ---
-        // availableCount comes from App.jsx based on availablePool.length
-       const isLastPlayerInSet = (currentIndex >= availableCount - 1);
+        const isLastPlayerInSet = (currentIndex >= availableCount - 1);
         
-       
         const resetAuctionState = { 
             activeDuelists: [], 
             gaveUpTeams: [], 
@@ -119,7 +128,6 @@ const AuctionHub = ({
 
         let updateData = { ...resetAuctionState };
 
-        // 1. PROCESS CURRENT PLAYER (Sold or Unsold)
         let updatedUnsold = [...(unsoldPlayers || [])];
         let updatedSold = [...(soldPlayers || [])];
         let updatedTeams = [...teams];
@@ -143,35 +151,26 @@ const AuctionHub = ({
                 teamColor: winningTeam.color 
             });
         } else {
-            // Player was skipped/unsold - add to the buffer
             updatedUnsold.push({ ...currentPlayer });
         }
 
-        // Apply these to our update object
         updateData.teams = updatedTeams;
         updateData.soldPlayers = updatedSold;
 
-        // 2. CALCULATE ROUND PROGRESSION
         if (isLastPlayerInSet) {
-            // We've reached the end of the current pool
-            //alert("Moving");
             if (updatedUnsold.length > 0) {
-                // MOVE TO NEXT ROUND: Take the buffer we just built and make it the NEW pool
                 updateData.currentIndex = 0; 
                 updateData.currentRound = (currentRound || 1) + 1;
-                updateData.playersPool = updatedUnsold; // This is the magic for Round 2
-                updateData.unsoldPlayers = []; // Clear buffer for the new round
-               // alert(`Round ${currentRound} Complete! Moving ${updatedUnsold.length} players to Round ${currentRound + 1}`);
+                updateData.playersPool = updatedUnsold; 
+                updateData.unsoldPlayers = []; 
             } else {
-                // Truly finished: No one left anywhere
                 updateData.currentIndex = currentIndex + 1; 
                 updateData.playersPool = []; 
                 updateData.unsoldPlayers = [];
             }
         } else {
-            // Just move to the next player in the existing pool
             updateData.currentIndex = currentIndex + 1;
-            updateData.unsoldPlayers = updatedUnsold; // Keep carrying the buffer forward
+            updateData.unsoldPlayers = updatedUnsold;
         }
 
         syncToCloud(updateData);
@@ -203,7 +202,6 @@ const AuctionHub = ({
     return (
         <div className="min-h-screen bg-transparent text-white font-sans relative">
             
-            {/* --- PHASE COMPLETE OVERLAY --- */}
             {phaseOverlay && (
                 <div className="fixed inset-0 z-[500] bg-slate-950/98 backdrop-blur-3xl flex flex-col items-center justify-center p-10 text-center animate-in fade-in zoom-in duration-500">
                     <div className="w-32 h-32 bg-blue-600/20 rounded-full flex items-center justify-center mb-8 border border-blue-500/50">
@@ -222,7 +220,6 @@ const AuctionHub = ({
                 </div>
             )}
 
-            {/* --- SOLD CONGRATULATIONS OVERLAY --- */}
             {soldOverlay.show && (
                 <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in duration-500 overflow-hidden">
                     <div className={`absolute inset-0 opacity-30 blur-[120px] animate-pulse ${soldOverlay.teamColor}`}></div>
@@ -249,7 +246,6 @@ const AuctionHub = ({
                 </div>
             )}
 
-            {/* --- TOP NAV --- */}
             <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-[100]">
                 <button onClick={() => setAuctionType(null)} className="bg-slate-900/80 hover:bg-slate-800 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">
                     ← Exit {auctionType} Arena
@@ -266,7 +262,7 @@ const AuctionHub = ({
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                        <div className="lg:col-span-5">
+                        <div className={`lg:col-span-5 transition-all duration-500 ${isNewPlayer ? 'animate-new-player scale-[0.98]' : 'scale-100'}`}>
                             <PlayerCard
                                 player={currentPlayer}
                                 currentRound={currentRound}
