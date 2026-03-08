@@ -74,7 +74,16 @@ const AuctionHub = ({
 
     const handleBid = (teamId) => {
         const team = teams.find(t => t.id === teamId);
+
+        
         if (!team) return;
+
+        // FIX 1: Squad Limit Check
+        const teamPlayers = team.players || [];
+        if (teamPlayers.length >= SQUAD_LIMIT) {
+            alert(`Squad Full! ${team.name} already has ${SQUAD_LIMIT} players.`);
+            return;
+        }
 
         const isAlreadyInDuel = activeDuelists.includes(teamId);
         if (!isAlreadyInDuel && activeDuelists.length >= 2) {
@@ -84,7 +93,7 @@ const AuctionHub = ({
 
         const nextBidAmount = highestBidderId ? currentBid + BID_INCREMENT : (currentPlayer?.basePrice || BASE_PRICE);
         
-        const teamPlayers = team.players || [];
+        //const teamPlayers = team.players || [];
         const slotsRemaining = SQUAD_LIMIT - teamPlayers.length;
         const reservedAmount = (slotsRemaining - 1) * BASE_PRICE;
         const maxAllowableBid = team.budget - reservedAmount;
@@ -115,7 +124,7 @@ const AuctionHub = ({
 
     const handleHammerDown = () => {
         if (user.role !== 'ADMIN' || !currentPlayer) return;
-
+       // alert(currentIndex +"::"+ availableCount );
         const isLastPlayerInSet = (currentIndex >= availableCount - 1);
         
         const resetAuctionState = { 
@@ -131,6 +140,7 @@ const AuctionHub = ({
         let updatedUnsold = [...(unsoldPlayers || [])];
         let updatedSold = [...(soldPlayers || [])];
         let updatedTeams = [...teams];
+        let playerWasUnsold = false;
 
         if (highestBidderId) {
             const winningTeam = teams.find(t => t.id === highestBidderId);
@@ -152,6 +162,7 @@ const AuctionHub = ({
             });
         } else {
             updatedUnsold.push({ ...currentPlayer });
+            playerWasUnsold = true;
         }
 
         updateData.teams = updatedTeams;
@@ -169,7 +180,7 @@ const AuctionHub = ({
                 updateData.unsoldPlayers = [];
             }
         } else {
-            updateData.currentIndex = currentIndex + 1;
+            updateData.currentIndex = playerWasUnsold ? currentIndex + 1 : currentIndex;
             updateData.unsoldPlayers = updatedUnsold;
         }
 
