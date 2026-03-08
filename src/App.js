@@ -137,7 +137,7 @@ function App() {
                         auctionState={auctionState || { teams: DEFAULT_TEAMS }}
                         user={user}
                         onLogout={handleLogout}
-                        availableCount={availablePool.length-1}
+                        availableCount={availablePool.length}
                         round={currentRoundNumber}
                         recentSales={recentSales}
                         auctionType={auctionType}
@@ -166,7 +166,7 @@ function App() {
                                     auctionType={auctionType}
                                     setAuctionType={setAuctionType}
                                     currentPlayer={currentPlayer}
-                                    availableCount={availablePool.length-1}
+                                    availableCount={availablePool.length}
                                     currentRound={currentRoundNumber}
                                     syncToCloud={syncToCloud}
                                     user={user}

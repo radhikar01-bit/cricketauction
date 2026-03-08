@@ -124,9 +124,7 @@ const AuctionHub = ({
 
     const handleHammerDown = () => {
         if (user.role !== 'ADMIN' || !currentPlayer) return;
-       // alert(currentIndex +"::"+ availableCount );
-        const isLastPlayerInSet = (currentIndex >= availableCount - 1);
-        
+
         const resetAuctionState = { 
             activeDuelists: [], 
             gaveUpTeams: [], 
@@ -136,13 +134,13 @@ const AuctionHub = ({
         };
 
         let updateData = { ...resetAuctionState };
-
         let updatedUnsold = [...(unsoldPlayers || [])];
         let updatedSold = [...(soldPlayers || [])];
         let updatedTeams = [...teams];
-        let playerWasUnsold = false;
+        
+        const isSold = highestBidderId !== null;
 
-        if (highestBidderId) {
+        if (isSold) {
             const winningTeam = teams.find(t => t.id === highestBidderId);
             updatedTeams = teams.map(t => {
                 if (t.id === highestBidderId) {
@@ -162,31 +160,45 @@ const AuctionHub = ({
             });
         } else {
             updatedUnsold.push({ ...currentPlayer });
-            playerWasUnsold = true;
         }
 
         updateData.teams = updatedTeams;
         updateData.soldPlayers = updatedSold;
 
-        if (isLastPlayerInSet) {
+        // CHECK: Is this the last player currently available in the pool?
+        const isLastPlayerInPool = (currentIndex >= availableCount - 1);
+
+        if (isLastPlayerInPool) {
             if (updatedUnsold.length > 0) {
+                // Restart with the Unsold Pool
                 updateData.currentIndex = 0; 
                 updateData.currentRound = (currentRound || 1) + 1;
                 updateData.playersPool = updatedUnsold; 
                 updateData.unsoldPlayers = []; 
             } else {
+                // No one left at all
                 updateData.currentIndex = currentIndex + 1; 
                 updateData.playersPool = []; 
-                updateData.unsoldPlayers = [];
             }
         } else {
-            updateData.currentIndex = playerWasUnsold ? currentIndex + 1 : currentIndex;
+            /* THE CORE FIX:
+               1. If SOLD: The player is removed from the available pool. 
+                  The NEXT player slides into the CURRENT index. 
+                  Keep currentIndex exactly the same.
+               
+               2. If UNSOLD/SKIPPED: The player stays in the pool (but we move past them).
+                  Increment currentIndex to see the next person.
+            */
+            if (isSold) {
+                updateData.currentIndex = currentIndex; 
+            } else {
+                updateData.currentIndex = currentIndex + 1;
+            }
             updateData.unsoldPlayers = updatedUnsold;
         }
 
         syncToCloud(updateData);
     };
-
     if (!auctionType) {
         return (
             <div className="h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-white">
@@ -261,16 +273,69 @@ const AuctionHub = ({
                 <button onClick={() => setAuctionType(null)} className="bg-slate-900/80 hover:bg-slate-800 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">
                     ← Exit {auctionType} Arena
                 </button>
-                <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em]">
+               {currentPlayer && ( <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em]">
                     {auctionType} Live • Round {currentRound} • ID: {currentPlayer?.id}
-                </div>
+                </div>)}
             </div>
 
             <div className="pt-32 pb-20 px-4 max-w-6xl mx-auto">
                 {!currentPlayer ? (
-                    <div className="text-center py-32 bg-slate-900/40 backdrop-blur-md rounded-[4rem] border border-white/5">
-                        <h2 className="text-6xl font-black text-slate-700 uppercase italic">Auction Complete</h2>
-                    </div>
+                    <div className="min-h-[60vh] flex flex-col items-center justify-center relative animate-in fade-in zoom-in duration-1000">
+        {/* Background Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-600/10 blur-[80px] rounded-full"></div>
+
+        <div className="relative z-10 text-center space-y-8 max-w-4xl w-full px-6">
+            {/* Header Section */}
+            <div className="space-y-4">
+                <div className="inline-block px-6 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs font-black uppercase tracking-[0.4em] animate-pulse">
+                    Session Terminated
+                </div>
+                <h2 className="text-7xl md:text-9xl font-[1000] italic uppercase tracking-tighter text-white leading-none">
+                    Auction <br /> 
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">
+                        Complete
+                    </span>
+                </h2>
+            </div>
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8">
+                <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem]">
+                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Total Players Sold</p>
+                    <p className="text-4xl font-black italic">{soldPlayers?.length || 0}</p>
+                </div>
+                <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem]">
+                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Top Purchase</p>
+                    <p className="text-2xl font-black italic truncate">
+                        {soldPlayers?.length > 0 
+                            ? `₹${Math.max(...soldPlayers.map(p => p.price)).toLocaleString()}` 
+                            : "N/A"}
+                    </p>
+                </div>
+                <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem]">
+                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Status</p>
+                    <p className="text-2xl font-black italic text-green-500">FINALIZED</p>
+                </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 pt-8">
+                <button 
+                    onClick={() => setAuctionType(null)}
+                    className="w-full md:w-auto px-10 py-5 bg-white text-black rounded-full font-black uppercase italic tracking-widest text-sm hover:scale-105 active:scale-95 transition-all shadow-2xl"
+                >
+                    Return to Lobby
+                </button>
+                <button 
+                    onClick={() => window.print()}
+                    className="w-full md:w-auto px-10 py-5 bg-slate-800 text-white border border-white/10 rounded-full font-black uppercase italic tracking-widest text-sm hover:bg-slate-700 transition-all"
+                >
+                    Download Report
+                </button>
+            </div>
+        </div>
+    </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                         <div className={`lg:col-span-5 transition-all duration-500 ${isNewPlayer ? 'animate-new-player scale-[0.98]' : 'scale-100'}`}>
