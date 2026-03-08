@@ -13,131 +13,191 @@ import Footer from './components/Footer';
 import ConditionalHeader from './components/ConditionalHeader';
 import Squads from './components/Squads';
 
-import { INITIAL_TEAMS, PLAYER_POOL } from './auctionData';
+// --- Data Imports ---
+import { 
+    IPL_PLAYERS, 
+    PLAYER_POOL, 
+    IPL_TEAMS, 
+    INITIAL_TEAMS 
+} from './auctionData';
 
 function App() {
-    const [auctionState, setAuctionState] = useState({
-        teams: INITIAL_TEAMS,
-        currentIndex: 0,
-        soldPlayers: [],
-        currentBid: 5000,
-        highestBidderId: null,
-        bidHistory: [],
-        activeDuelists: [],
-        gaveUpTeams: []
+    const [auctionType, setAuctionType] = useState(() => {
+        return localStorage.getItem('activeAuctionType') || null;
     });
+    
+    const [auctionState, setAuctionState] = useState(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const auctionRef = ref(db, 'live_auction');
+        if (auctionType) {
+            localStorage.setItem('activeAuctionType', auctionType);
+        }
+    }, [auctionType]);
+
+    const dbPath = auctionType === 'womens' ? 'live_auction_womens' : 'live_auction_mens';
+    const CURRENT_POOL = auctionType === 'womens' ? PLAYER_POOL : IPL_PLAYERS;
+    const DEFAULT_TEAMS = auctionType === 'womens' ? INITIAL_TEAMS : IPL_TEAMS;
+
+    useEffect(() => {
+        if (!auctionType) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        const auctionRef = ref(db, dbPath);
         const unsubscribe = onValue(auctionRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) setAuctionState(data);
+            if (data) {
+                setAuctionState(data);
+            } else {
+                const initialState = {
+                    teams: DEFAULT_TEAMS,
+                    currentIndex: 0,
+                    currentRound: 1, 
+                    soldPlayers: [],
+                    unsoldPlayers: [], 
+                    playersPool: [], // Pool for subsequent rounds
+                    currentBid: 5000,
+                    highestBidderId: null,
+                    bidHistory: [],
+                    activeDuelists: [],
+                    gaveUpTeams: []
+                };
+                setAuctionState(initialState);
+            }
             setLoading(false);
         });
 
+        return () => unsubscribe();
+    }, [auctionType, dbPath, DEFAULT_TEAMS]);
+
+    useEffect(() => {
         const savedUser = localStorage.getItem('auctionUser');
         if (savedUser) setUser(JSON.parse(savedUser));
-
-        return () => unsubscribe();
     }, []);
 
     const syncToCloud = (updates) => {
-        const auctionRef = ref(db, 'live_auction');
+        if (!auctionType) return;
+        const auctionRef = ref(db, dbPath);
         update(auctionRef, updates);
     };
 
     const handleLogout = () => {
         localStorage.removeItem('auctionUser');
+        localStorage.removeItem('activeAuctionType');
         setUser(null);
+        setAuctionType(null);
     };
 
-    // --- LOGIC ---
-    const soldPlayerIds = new Set((auctionState.soldPlayers || []).map(p => p.id));
-    const availablePool = PLAYER_POOL.filter(p => !soldPlayerIds.has(p.id));
+    // --- REFINED DERIVED LOGIC ---
+    
+    // 1. Determine active pool: Round 1 uses CURRENT_POOL, Round 2+ uses playersPool
+    const activePoolSource = (auctionState?.playersPool && auctionState.playersPool.length > 0) 
+        ? auctionState.playersPool 
+        : CURRENT_POOL;
 
-    // Stable Round Logic based on current available pool size
-    const poolSize = availablePool.length || 1;
-    const currentRoundNumber = Math.floor(auctionState.currentIndex / poolSize) + 1;
-    const activeIndex = auctionState.currentIndex % poolSize;
-    const currentPlayer = availablePool[activeIndex];
-    const recentSales = [...(auctionState.soldPlayers || [])].reverse().slice(0, 10);
+    const soldPlayerIds = new Set((auctionState?.soldPlayers || []).map(p => p.id));
+    
+    // 2. Filter available players from the ACTIVE pool source
+    const availablePool = (activePoolSource || []).filter(p => !soldPlayerIds.has(p.id));
 
-    if (loading && !window.location.pathname.includes('setupdb')) {
-        return (
-            <div className="h-screen bg-slate-950 flex items-center justify-center text-white font-black italic tracking-tighter text-2xl animate-pulse">
-                LOADING ARENA...
-            </div>
-        );
-    }
+    // 3. Metadata and Round tracking
+    const currentRoundNumber = auctionState?.currentRound || 1;
+    const activeIndex = auctionState ? auctionState.currentIndex : 0;
+    
+    // 4. Current Player detection (returns null if we've exhausted the current pool)
+    const currentPlayer = availablePool[activeIndex] || null;
+    
+    const recentSales = [...(auctionState?.soldPlayers || [])].reverse().slice(0, 10);
 
     if (!user) {
         return <Login onLoginSuccess={(userData) => setUser(userData)} />;
     }
 
+    if (loading && auctionType) {
+        return (
+            <div className="h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+                <div className={`w-12 h-12 border-4 ${auctionType === 'womens' ? 'border-pink-500' : 'border-blue-500'} border-t-transparent rounded-full animate-spin mb-4`}></div>
+                <div className="font-black italic uppercase tracking-tighter text-2xl animate-pulse">
+                    LOADING {auctionType.toUpperCase()} ARENA...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Router>
             <div className="flex flex-col min-h-screen bg-black text-white font-sans overflow-hidden">
-                <ConditionalHeader
-                    auctionState={auctionState}
-                    user={user}
-                    onLogout={handleLogout}
-                    availableCount={availablePool.length}
-                    round={currentRoundNumber}
-                    recentSales={recentSales}
-                />
+                
+                {auctionType && (
+                    <ConditionalHeader
+                        auctionState={auctionState || { teams: DEFAULT_TEAMS }}
+                        user={user}
+                        onLogout={handleLogout}
+                        availableCount={availablePool.length-1}
+                        round={currentRoundNumber}
+                        recentSales={recentSales}
+                        auctionType={auctionType}
+                    />
+                )}
 
-                {/* THE MAIN ARENA CONTAINER */}
                 <main className="flex-1 relative overflow-hidden bg-slate-950">
-
-                    {/* BACKGROUND IMAGE LAYER */}
                     <div
                         className="absolute inset-0 z-0 pointer-events-none"
                         style={{
                             backgroundImage: `url('https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067')`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
-                            opacity: '0.25', // Visible but not distracting
-                            mixBlendMode: 'luminosity' // Makes it look premium/integrated
+                            opacity: '0.15',
+                            mixBlendMode: 'luminosity'
                         }}
                     />
 
-                    {/* VIGNETTE OVERLAY (Darkens edges to focus on center) */}
-                    <div className="absolute inset-0 z-[1] bg-gradient-to-b from-slate-950 via-transparent to-slate-950 pointer-events-none opacity-80" />
-
-                    {/* SCROLLABLE CONTENT LAYER */}
                     <div className="relative z-10 h-full overflow-y-auto">
                         <Routes>
                             <Route path="/setupdb" element={<Setup />} />
-                            {auctionState?.teams && (
+                            
+                            <Route path="/" element={
+                                <AuctionHub
+                                    {...(auctionState || { teams: DEFAULT_TEAMS })}
+                                    auctionType={auctionType}
+                                    setAuctionType={setAuctionType}
+                                    currentPlayer={currentPlayer}
+                                    availableCount={availablePool.length-1}
+                                    currentRound={currentRoundNumber}
+                                    syncToCloud={syncToCloud}
+                                    user={user}
+                                />
+                            } />
+                            
+                            {auctionType && auctionState && (
                                 <>
-                                    <Route path="/" element={
-                                        <AuctionHub
-                                            {...auctionState}
-                                            currentPlayer={currentPlayer}
-                                            availableCount={availablePool.length}
-                                            currentRound={currentRoundNumber}
-                                            syncToCloud={syncToCloud}
-                                            user={user}
-                                        />
-                                    } />
-                                    <Route path="/dashboard" element={<Dashboard {...auctionState} />} />
+                                    <Route path="/dashboard" element={<Dashboard teams={auctionState.teams} auctionType={auctionType}/>} />
                                     <Route path="/squads" element={<Squads teams={auctionState.teams} />} />
                                     <Route path="/admin" element={
                                         user.role === 'ADMIN'
-                                            ? <AdminPanel {...auctionState} syncToCloud={syncToCloud} />
+                                            ? <AdminPanel 
+                                                {...auctionState} 
+                                                syncToCloud={syncToCloud} 
+                                                playerPool={CURRENT_POOL} 
+                                                initialTeams={DEFAULT_TEAMS} 
+                                              />
                                             : <Navigate to="/" />
                                     } />
                                 </>
                             )}
+
+                            <Route path="*" element={<Navigate to="/" />} />
                         </Routes>
                     </div>
                 </main>
 
                 <Footer
-                    teams={auctionState.teams}
-                    soldPlayers={auctionState.soldPlayers || []}
+                    teams={auctionState?.teams || DEFAULT_TEAMS}
+                    soldPlayers={auctionState?.soldPlayers || []}
                 />
             </div>
         </Router>

@@ -1,5 +1,4 @@
 ﻿import React, { useState } from 'react';
-import { PLAYER_POOL, INITIAL_TEAMS } from '../auctionData';
 
 // --- LEFT ALIGNED TABS ---
 const AdminTabs = ({ activeTab, setActiveTab, soldCount, onResetClick }) => (
@@ -41,31 +40,48 @@ const SoldPlayerRow = ({ player, onReset }) => (
     </tr>
 );
 
-const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
+const AdminPanel = ({ 
+    teams = [], 
+    soldPlayers = [], 
+    syncToCloud, 
+    playerPool = [], // Dynamic pool from App.jsx
+    initialTeams = [] // Dynamic initial teams from App.jsx
+}) => {
     const [activeTab, setActiveTab] = useState("assign");
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [selectedTeamId, setSelectedTeamId] = useState("");
     const [salePrice, setSalePrice] = useState(5000);
 
-    const SQUAD_LIMIT = 8;
+    const SQUAD_LIMIT = 8; // Updated to match your Hub limit
     const BASE_PRICE = 5000;
 
     const handleFullReset = () => {
         const confirmText = "RESET";
-        const input = window.prompt(`DANGER: This will wipe all auction progress.\nType "${confirmText}" to confirm:`);
+        const input = window.prompt(`DANGER: This will wipe all auction progress for this Arena.\nType "${confirmText}" to confirm:`);
 
         if (input === confirmText) {
             syncToCloud({
-                teams: INITIAL_TEAMS,
+                // Resetting core data
+                teams: initialTeams, 
                 soldPlayers: [],
+                
+                // Resetting round & index
                 currentIndex: 0,
+                currentRound: 1, // Explicitly reset to Round 1
+                
+                // Clearing unsold buffers
+                playersPool: [],     // Wipes the Round 2/3 custom pool
+                unsoldPlayers: [],   // Wipes the pending unsold list
+                
+                // Resetting bid state
                 currentBid: 5000,
                 highestBidderId: null,
-                totalPointsAvailable: 0,
-                bidHistory: []
+                bidHistory: [],
+                activeDuelists: [],
+                gaveUpTeams: []
             });
-            alert("Auction has been fully reset.");
+            alert("Auction arena has been fully reset to Round 1.");
             setActiveTab("assign");
         }
     };
@@ -112,7 +128,8 @@ const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
         setSelectedPlayer(null); setSelectedTeamId(""); setSearchTerm(""); setSalePrice(5000);
     };
 
-    const filteredPool = PLAYER_POOL.filter(p =>
+    // USES playerPool prop to filter correctly based on Arena
+    const filteredPool = playerPool.filter(p =>
         !(soldPlayers || []).some(s => s.id === p.id) &&
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 8);
@@ -121,7 +138,6 @@ const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
         <div className="h-screen bg-[#05080f] text-white p-2 md:p-4 overflow-hidden font-sans flex flex-col">
             <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col overflow-hidden">
 
-                {/* LEFT ALIGNED TAB CONTAINER */}
                 <div className="flex justify-start">
                     <AdminTabs
                         activeTab={activeTab}
@@ -134,7 +150,6 @@ const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
                 <div className="flex-1 min-h-0">
                     {activeTab === "assign" ? (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full items-start">
-                            {/* SEARCH SECTION */}
                             <div className="lg:col-span-7 bg-slate-900/40 border border-slate-800/50 p-4 rounded-xl flex flex-col max-h-[85vh]">
                                 <h3 className="text-[9px] font-black uppercase text-slate-500 mb-2 flex items-center gap-2 tracking-tighter">
                                     <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span> Select Player
@@ -164,7 +179,6 @@ const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
                                 </div>
                             </div>
 
-                            {/* ASSIGNMENT SECTION */}
                             <div className="lg:col-span-5 bg-slate-900/40 border border-slate-800/50 p-4 rounded-xl">
                                 <h3 className="text-[9px] font-black uppercase text-slate-500 mb-2 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span> Assignment
@@ -172,7 +186,7 @@ const AdminPanel = ({ teams = [], soldPlayers = [], syncToCloud }) => {
                                 <div className="space-y-3">
                                     <select className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg font-bold text-[10px] uppercase outline-none focus:border-blue-600" value={selectedTeamId} onChange={(e) => setSelectedTeamId(e.target.value)}>
                                         <option value="">Select Team...</option>
-                                        {teams.map(t => <option key={t.id} value={t.id} disabled={(t.players?.length || 0) >= SQUAD_LIMIT}>{t.name} ({(t.players?.length || 0)}/8)</option>)}
+                                        {teams.map(t => <option key={t.id} value={t.id} disabled={(t.players?.length || 0) >= SQUAD_LIMIT}>{t.name} ({(t.players?.length || 0)}/{SQUAD_LIMIT})</option>)}
                                     </select>
                                     <div>
                                         <input type="number" className="w-full bg-slate-950 border border-slate-800 p-2 rounded-lg font-black text-xl text-blue-500 text-center outline-none focus:border-blue-500" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
