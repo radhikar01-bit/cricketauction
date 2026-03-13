@@ -43,9 +43,10 @@ const SoldPlayerRow = ({ player, onReset }) => (
 const AdminPanel = ({ 
     teams = [], 
     soldPlayers = [], 
+    unsoldPlayers = [], // Added this prop
     syncToCloud, 
-    playerPool = [], // Dynamic pool from App.jsx
-    initialTeams = [] // Dynamic initial teams from App.jsx
+    playerPool = [], 
+    initialTeams = [] 
 }) => {
     const [activeTab, setActiveTab] = useState("assign");
     const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +54,7 @@ const AdminPanel = ({
     const [selectedTeamId, setSelectedTeamId] = useState("");
     const [salePrice, setSalePrice] = useState(5000);
 
-    const SQUAD_LIMIT = 8; // Updated to match your Hub limit
+    const SQUAD_LIMIT = 8; 
     const BASE_PRICE = 5000;
 
     const handleFullReset = () => {
@@ -62,19 +63,12 @@ const AdminPanel = ({
 
         if (input === confirmText) {
             syncToCloud({
-                // Resetting core data
                 teams: initialTeams, 
                 soldPlayers: [],
-                
-                // Resetting round & index
                 currentIndex: 0,
-                currentRound: 1, // Explicitly reset to Round 1
-                
-                // Clearing unsold buffers
-                playersPool: [],     // Wipes the Round 2/3 custom pool
-                unsoldPlayers: [],   // Wipes the pending unsold list
-                
-                // Resetting bid state
+                currentRound: 1, 
+                playersPool: [],     
+                unsoldPlayers: [],   
                 currentBid: 5000,
                 highestBidderId: null,
                 bidHistory: [],
@@ -88,9 +82,27 @@ const AdminPanel = ({
 
     const handleMakeUnsold = (playerToUndo) => {
         if (!window.confirm(`Undo ${playerToUndo.name}?`)) return;
+
+        // 1. Remove from Sold List
         const updatedSold = (soldPlayers || []).filter(p => p.id !== playerToUndo.id);
+
+        // 2. Add back to Unsold Players ONLY if they aren't already there (Prevents Duplicates)
+        const isAlreadyInUnsold = (unsoldPlayers || []).some(p => p.id === playerToUndo.id);
+        
+        let updatedUnsold = [...(unsoldPlayers || [])];
+        if (!isAlreadyInUnsold) {
+            updatedUnsold.push({
+                id: playerToUndo.id,
+                name: playerToUndo.name,
+                role: playerToUndo.role,
+                basePrice: playerToUndo.basePrice || 5000
+            });
+        }
+
+        // 3. Refund budget and remove from team roster
         const updatedTeams = teams.map(team => {
-            if ((team.players || []).some(p => p.id === playerToUndo.id)) {
+            const hasPlayer = (team.players || []).some(p => p.id === playerToUndo.id);
+            if (hasPlayer) {
                 return {
                     ...team,
                     budget: Number(team.budget) + Number(playerToUndo.price),
@@ -99,7 +111,13 @@ const AdminPanel = ({
             }
             return team;
         });
-        syncToCloud({ soldPlayers: updatedSold, teams: updatedTeams });
+
+       
+        syncToCloud({ 
+            soldPlayers: updatedSold, 
+            teams: updatedTeams, 
+            unsoldPlayers: updatedUnsold 
+        });
     };
 
     const onManualSale = () => {
@@ -124,11 +142,14 @@ const AdminPanel = ({
         );
         const updatedSold = [...(soldPlayers || []), { ...selectedPlayer, soldTo: targetTeam.name, price: finalPrice }];
 
-        syncToCloud({ teams: updatedTeams, soldPlayers: updatedSold });
+        syncToCloud({ teams: updatedTeams, soldPlayers: updatedSold , currentBid: 5000,
+    highestBidderId: null,
+    bidHistory: [],
+    activeDuelists: [],
+    gaveUpTeams: [] });
         setSelectedPlayer(null); setSelectedTeamId(""); setSearchTerm(""); setSalePrice(5000);
     };
 
-    // USES playerPool prop to filter correctly based on Arena
     const filteredPool = playerPool.filter(p =>
         !(soldPlayers || []).some(s => s.id === p.id) &&
         p.name.toLowerCase().includes(searchTerm.toLowerCase())

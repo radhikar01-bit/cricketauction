@@ -8,93 +8,90 @@ const PlayerCard = ({
     basePrice,
     currentBid,
     highestBidderId,
-    bidIncrement
+    bidIncrement,
+    handleHammerDown, // Pass this function as a prop
+    userRole          // Pass user.role as a prop
 }) => {
     if (!player) return null;
 
     const nextBid = highestBidderId ? currentBid + bidIncrement : basePrice;
-
-    const nameParts = player.name.split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ');
-
-    // High-impact cricket placeholder image
     const DEFAULT_CRICKET_IMG = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop";
 
     return (
-        <div className="bg-slate-900/40 p-6 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden group transition-all duration-500 hover:border-blue-500/30">
-
-            {/* 1. PLAYER IMAGE SECTION */}
-            <div className="relative w-full h-80 mb-6 rounded-3xl overflow-hidden bg-slate-950 border border-slate-800/50 flex items-center justify-center">
-
-                {/* Background Decorative Initial */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-5 select-none z-0">
-                    <span className="text-[18rem] font-black italic text-white leading-none">
-                        {player.name[0]}
-                    </span>
-                </div>
-
-                {/* The Image (Real or Headshot Placeholder) */}
-                <img
-                    src={player.image || DEFAULT_CRICKET_IMG}
-                    alt={player.name}
-                    className={`relative z-10 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110 ${!player.image ? 'opacity-40 grayscale contrast-125' : ''}`}
-                />
-
-                {/* Visual Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-90 z-20"></div>
-
-                {/* Category/Country Badge */}
-                <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
-                    <span className="bg-blue-600/90 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl ring-1 ring-white/10">
-                        {player.country || "ELITE PROSPECT"}
-                    </span>
-                </div>
-            </div>
-
-            {/* 2. PLAYER IDENTITY */}
-            <div className="relative px-2 z-30">
-                <div className="flex justify-between items-end mb-2">
-                    <div className="flex-1">
-                        <p className="text-blue-500 font-black text-[10px] tracking-[0.4em] uppercase mb-1">
-                            Round {currentRound}
+        <div className="w-full flex flex-col gap-2 bg-slate-900/40 p-5 rounded-[2rem] shadow-xl">
+            
+            {/* ROW 1: HEADER & ADMIN ACTIONS */}
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-5">
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shrink-0">
+                        <img
+                            src={player.image || DEFAULT_CRICKET_IMG}
+                            alt={player.name}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div>
+                        <p className="text-blue-500 font-black text-[9px] tracking-[0.4em] uppercase mb-0.5">
+                            ROUND {currentRound} • PLAYER #{currentIndex + 1}
                         </p>
-                        <h2 className="text-5xl font-[1000] italic tracking-tighter uppercase leading-[0.85] text-white">
-                            {firstName}<br />
-                            <span className="text-slate-400">{lastName}</span>
+                        <h2 className="text-3xl font-[900] italic tracking-tighter uppercase leading-none text-white">
+                            {player.name}
                         </h2>
                     </div>
-                    <div className="text-right">
-                        <p className="text-slate-700 font-black text-[9px] uppercase tracking-widest leading-none mb-1">Squad No.</p>
-                        <p className="text-white font-mono text-sm opacity-30">#{currentIndex + 1}</p>
-                    </div>
                 </div>
 
-                <div className="flex items-center gap-3 mb-6">
-                    <p className="bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-blue-400 font-black uppercase tracking-widest italic text-[10px]">
-                        {player.role}
-                    </p>
-                    <span className="h-1 w-1 bg-slate-800 rounded-full"></span>
-                    <p className="text-slate-500 font-bold text-[10px] uppercase">
-                        {availableCount} Left in Pool
-                    </p>
-                </div>
+                {/* INTEGRATED ADMIN CONTROLS */}
+                {userRole === 'ADMIN' && (
+                    <button 
+                        onClick={handleHammerDown}
+                        className={`h-20 px-8 rounded-2xl font-[1000] italic uppercase transition-all flex flex-col items-center justify-center gap-1 shrink-0
+                            ${highestBidderId 
+                                ? 'bg-white text-black hover:bg-slate-200' 
+                                : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}
+                    >
+                        <span className="text-2xl leading-none">{highestBidderId ? "🔨" : "⏭️"}</span>
+                        <span className="text-[10px] tracking-widest">{highestBidderId ? "HAMMER" : "SKIP"}</span>
+                    </button>
+                )}
+            </div>
 
-                {/* 3. PRICE INFO TABLE */}
-                <div className="grid grid-cols-2 gap-px bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-800">
-                    <div className="bg-slate-950/40 p-4">
-                        <p className="text-slate-600 text-[8px] font-black uppercase mb-1 tracking-widest">Base Value</p>
-                        <p className="text-xl font-black text-slate-300">₹{basePrice.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-slate-950/40 p-4 border-l border-slate-800">
-                        <p className="text-slate-600 text-[8px] font-black uppercase mb-1 tracking-widest">Next Bid</p>
-                        <p className="text-xl font-black text-green-500">₹{nextBid.toLocaleString()}</p>
-                    </div>
+            {/* ROW 2: DATA TABLE (NOW 4 COLUMNS) */}
+            <div className="grid grid-cols-4 gap-4 py-4 border-y border-white/5">
+                <div className="flex flex-col">
+                    <span className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Country</span>
+                    <span className="text-white font-black text-sm uppercase truncate">{player.country || "PROSPECT"}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Role</span>
+                    <span className="text-blue-400 font-black text-sm uppercase italic">{player.role}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Base Price</span>
+                    <span className="text-white font-black text-sm italic">₹{basePrice.toLocaleString()}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Status</span>
+                    <span className="text-slate-400 font-black text-sm uppercase">{availableCount - currentIndex} LEFT</span>
                 </div>
             </div>
 
-            {/* Aesthetic Glow Element */}
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-600/10 blur-[80px] rounded-full pointer-events-none"></div>
+            {/* ROW 3: BIDDING STATUS */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-950/50 p-4 rounded-xl border border-white/5">
+                    <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Current Valuation</p>
+                    <p className="text-3xl font-[1000] text-white italic">
+                        <span className="text-sm text-slate-500 mr-1 italic">₹</span>
+                        {currentBid.toLocaleString()}
+                    </p>
+                </div>
+                <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/10">
+                    <p className="text-green-500/60 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Next Minimum</p>
+                    <p className="text-3xl font-[1000] text-green-400 italic">
+                        <span className="text-sm text-green-700 mr-1 italic">₹</span>
+                        {nextBid.toLocaleString()}
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };

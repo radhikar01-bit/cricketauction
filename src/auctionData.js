@@ -1,13 +1,65 @@
 // auctionData.js
 
-export const INITIAL_TEAMS = [
+export const TEAMS = [
     { id: 1, name: "Mumbai Indians", budget: 100000, players: [], color: "bg-blue-600" },
     { id: 2, name: "Royal Challengers Bengaluru", budget: 100000, players: [], color: "bg-red-700" },
     { id: 3, name: "Delhi Capitals", budget: 100000, players: [], color: "bg-blue-800" },
     { id: 4, name: "UP Warriorz", budget: 100000, players: [], color: "bg-purple-800" },
     { id: 5, name: "Gujarat Giants", budget: 100000, players: [], color: "bg-orange-500" },
 ];
-export const PLAYER_POOL = [
+
+export const INITIAL_TEAMS = [
+    { id: 1, name: "Sakshi Aura", budget: 100000, players: [], color: "bg-blue-600" },
+    { id: 2, name: "Radhika Mighty Maidens", budget: 100000, players: [], color: "bg-red-700" },
+    { id: 3, name: "Priyanka ", budget: 100000, players: [], color: "bg-blue-800" },
+    { id: 4, name: "Ketki Veerangana", budget: 100000, players: [], color: "bg-purple-800" },
+    { id: 5, name: "Runali", budget: 100000, players: [], color: "bg-orange-500" },
+];
+
+export const  PLAYER_POOL= [
+{ id: 1, name: "Siddhi Sandeep More", role: "Bowler", country: "Orchid", basePrice: 5000 },
+{ id: 2, name: "Kavita Kothari", role: "All Rounder", country: "Clover", basePrice: 5000 },
+{ id: 3, name: "Vaishali Mandole", role: "All Rounder", country: "Clover", basePrice: 5000 },
+{ id: 4, name: "Arati Ashish Dighe", role: "Batter", country: "Cedar", basePrice: 5000 },
+{ id: 5, name: "Neha Dubey", role: "Bowler", country: "Cedar", basePrice: 5000 },
+{ id: 6, name: "Anushree Kunal Vaidya", role: "Batter", country: "Almond", basePrice: 5000 },
+{ id: 7, name: "Digna Shah", role: "Batter", country: "Cedar", basePrice: 5000 },
+{ id: 8, name: "Gunjan Gite", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 9, name: "Priya Jain", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 10, name: "Pinky Thanawala", role: "Batter", country: "Orchid", basePrice: 5000 },
+{ id: 11, name: "Reshma Nikhil Kotian", role: "All Rounder", country: "Coral", basePrice: 5000 },
+{ id: 12, name: "Snehal Anoop Desai", role: "All Rounder", country: "Alcacia", basePrice: 5000 },
+{ id: 13, name: "Richa Shah", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 14, name: "Sejal Sawant", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 15, name: "Shital Tilak", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 16, name: "Shachi Shah", role: "Bowler", country: "Orchid", basePrice: 5000 },
+{ id: 17, name: "Devika Vimal", role: "All Rounder", country: "Cedar", basePrice: 5000 },
+{ id: 18, name: "Sarabjeet Kaur Mokha", role: "Batter", country: "Clover", basePrice: 5000 },
+{ id: 19, name: "Archie R Kumar", role: "All Rounder", country: "Cedar", basePrice: 5000 },
+{ id: 20, name: "Pari Bhat", role: "All Rounder", country: "Coral", basePrice: 5000 },
+{ id: 21, name: "Kavita Bhat", role: "All Rounder", country: "Coral", basePrice: 5000 },
+{ id: 22, name: "Gouri Raut", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 23, name: "Krutika Satej Kadam", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 24, name: "Nivedita Thakur", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 25, name: "Shukriya Kate", role: "Batter", country: "Almond", basePrice: 5000 },
+{ id: 26, name: "Anchita Vimal Singh", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 27, name: "Shubhangi Amit Marathe", role: "Bowler", country: "Almond", basePrice: 5000 },
+{ id: 28, name: "Saroj Londhekar", role: "All Rounder", country: "Mapel", basePrice: 5000 },
+{ id: 29, name: "Rashmi Wankhade", role: "All Rounder", country: "Clover", basePrice: 5000 },
+{ id: 30, name: "Shweta Gujar Mane", role: "Bowler", country: "Cedar", basePrice: 5000 },
+{ id: 31, name: "Priyanka Mehta", role: "Bowler", country: "Orchid", basePrice: 5000 },
+{ id: 32, name: "Kavita Varma", role: "Bowler", country: "Orchid", basePrice: 5000 },
+{ id: 33, name: "Laxmi Makhijani", role: "All Rounder", country: "Orchid", basePrice: 5000 },
+{ id: 34, name: "Namita Dubey", role: "Bowler", country: "Tulip", basePrice: 5000 },
+{ id: 35, name: "Harshada Chakradhar Sankpal", role: "All Rounder", country: "Coral", basePrice: 5000 },
+{ id: 36, name: "Srushti Chetan Sawant", role: "Batter", country: "Alcacia", basePrice: 5000 },
+{ id: 37, name: "Janvi Yadav", role: "All Rounder", country: "Tulip", basePrice: 5000 },
+{ id: 38, name: "Ketki Ravindra Joshi", role: "Bowler", country: "Alcacia", basePrice: 5000 },
+{ id: 39, name: "Devika C Nanarkar", role: "All Rounder", country: "Mapel", basePrice: 5000 },
+{ id: 40, name: "Neha Katkar", role: "All Rounder", country: "Alcacia", basePrice: 5000 }
+];
+
+export const players = [
     // --- TOP PERFORMERS (The 2026 "Heavy Hitters") ---
     { id: 1, name: "Smriti Mandhana", role: "Batter", country: "India", basePrice: 5000 }, // Orange Cap Winner
     { id: 2, name: "Harmanpreet Kaur", role: "Batter", country: "India", basePrice: 5000 },
