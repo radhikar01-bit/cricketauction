@@ -28,7 +28,7 @@ const AuctionHub = ({
     const prevRoundRef = useRef(currentRound);
 
     const FALLBACK_BASE = 5000;
-    const BID_INCREMENT = 10000;
+    const BID_INCREMENT = 1000;
     const SQUAD_LIMIT = 8;
 
     useEffect(() => {
