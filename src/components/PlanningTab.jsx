@@ -26,6 +26,12 @@ const PlanningTab = () => {
     { name: "Nivedita Thakur (Base Price)", skill: "Bowler" },
   ];
 
+  // Added Sabotage List
+  const budgetDrainers = [
+    "Snehal Desai", "Gunjan Gite", "Priya Jain", 
+    "Ketki Joshi", "Reshma Kotian", "Kavita Bhatt", "Pari Bhatt"
+  ];
+
   useEffect(() => {
     const planRef = ref(db, 'auction_plans/admin_user');
     onValue(planRef, (snapshot) => {
@@ -101,7 +107,7 @@ const PlanningTab = () => {
         <button onClick={() => setActiveTab('dream')} className={`flex-1 py-2 text-[10px] font-bold rounded-md transition-all ${activeTab === 'dream' ? 'bg-orange-600 text-white' : 'text-gray-500'}`}>DREAM TEAM</button>
       </div>
 
-      {/* Sidebar: Pool (Shown on Desktop or when Pool tab active) */}
+      {/* Sidebar: Pool */}
       <div className={`${activeTab === 'pool' ? 'flex' : 'hidden'} md:flex w-full md:w-72 bg-gray-900 border border-gray-800 rounded-xl flex-col overflow-hidden`}>
         <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
           <h2 className="font-bold text-gray-400 text-xs tracking-widest uppercase">Available Pool</h2>
@@ -110,7 +116,7 @@ const PlanningTab = () => {
         <div className="flex-1 overflow-y-auto p-3">{columns.pool.map(p => <PlayerItem key={p.id} player={p} currentCol="pool" />)}</div>
       </div>
 
-      {/* Center/Main: Planner Board (Shown on Desktop or when Planner tab active) */}
+      {/* Center/Main: Planner Board */}
       <div className={`${activeTab === 'planner' ? 'flex' : 'hidden'} md:flex flex-1 flex-col gap-4 overflow-hidden`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-900 p-4 rounded-xl border border-gray-800 gap-4">
           <h2 className="text-lg font-bold text-white leading-none italic uppercase">Squad Planner</h2>
@@ -136,7 +142,7 @@ const PlanningTab = () => {
         </div>
       </div>
 
-      {/* NEW SIDEBAR: Dream Team Targets (Shown on Desktop or when Dream tab active) */}
+      {/* Sidebar: Dream Team + BUDGET DRAINERS */}
       <div className={`${activeTab === 'dream' ? 'flex' : 'hidden'} lg:flex w-full md:w-80 bg-slate-900/50 border border-orange-500/20 rounded-xl flex-col overflow-hidden`}>
         <div className="p-4 border-b border-orange-500/20 bg-orange-500/10">
           <h2 className="font-black text-orange-500 text-xs tracking-[0.2em] uppercase">Target Dream Team</h2>
@@ -148,8 +154,21 @@ const PlanningTab = () => {
               <div className="text-sm font-bold text-white uppercase italic leading-tight">{item.name}</div>
             </div>
           ))}
+
+          {/* New Section: Sabotage Targets */}
+          <div className="mt-6 border-t border-red-500/30 pt-4">
+            <h2 className="font-black text-red-500 text-[10px] tracking-widest uppercase mb-3 px-1">Budget Drainers (Sabotage)</h2>
+            <div className="grid grid-cols-1 gap-1">
+              {budgetDrainers.map((name, idx) => (
+                <div key={idx} className="px-3 py-2 bg-red-900/20 border border-red-900/40 rounded text-[11px] font-bold text-red-400 uppercase tracking-tight">
+                  ☠ {name}
+                </div>
+              ))}
+            </div>
+          </div>
+          
           <div className="mt-4 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 text-[9px] text-blue-400 italic">
-            Tip: Use the Planner (M, G, W) to mark these players as they appear in the pool.
+            Tip: Nominate "Budget Drainers" early to exhaust opponent points.
           </div>
         </div>
       </div>
