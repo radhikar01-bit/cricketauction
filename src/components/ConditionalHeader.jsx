@@ -90,7 +90,10 @@ const ConditionalHeader = ({ user, onLogout, availableCount, round, recentSales,
                         
                         {user.role === 'ADMIN' && (
                             <NavLink to="/admin" label="Control" icon="🛡️" isDanger activeColorClass="bg-red-600" />
-                        )}
+                                                    )}
+                                                    {user.role === 'ADMIN' && (
+                           <NavLink to="/admin/planning" label="Planning" icon="📋" activeColorClass="bg-blue-600" />
+                                                    )}
 
                         {/* Switch Arena / Logout Group */}
                         <div className="flex items-center ml-4 pl-4 border-l border-white/10 gap-2">

@@ -19,6 +19,7 @@ const AuctionHub = ({
     auctionType = null,
     setAuctionType
 }) => {
+    // ... (Keep all your existing state and logic exactly the same)
     const [soldOverlay, setSoldOverlay] = useState({ show: false, playerName: '', teamName: '', teamColor: '' });
     const [phaseOverlay, setPhaseOverlay] = useState(false);
     
@@ -149,7 +150,12 @@ const AuctionHub = ({
 
     return (
         <div className="min-h-screen w-full bg-slate-950 text-white flex flex-col relative overflow-x-hidden">
-            {/* COMPACT HEADER */}
+            {/* INLINE STYLE TO HIDE SCROLLBAR */}
+            <style dangerouslySetInnerHTML={{__html: `
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}} />
+
             <header className="h-14 flex items-center justify-between px-4 md:px-6 bg-slate-900 border-b border-white/5 shrink-0 z-20 sticky top-0">
                 <button onClick={() => setAuctionType(null)} className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 flex items-center gap-2">
                     <span>←</span> <span className="hidden sm:inline">Exit Arena</span>
@@ -167,10 +173,8 @@ const AuctionHub = ({
                     </div>
                 ) : (
                     <div className="max-w-[1600px] mx-auto w-full flex flex-col min-h-0">
-                        {/* MAIN LAYOUT: GRID ON DESKTOP, COLUMN ON MOBILE */}
                         <div className="grid grid-cols-12 gap-4 lg:gap-6 min-h-0 mb-6">
                             
-                            {/* PLAYER HERO */}
                             <div className="col-span-12 lg:col-span-5 flex flex-col min-h-0 order-1">
                                 <div className="aspect-[4/3] lg:aspect-auto lg:flex-1 bg-slate-900/60 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
                                     <div className="w-full h-full flex flex-col justify-center">
@@ -185,18 +189,13 @@ const AuctionHub = ({
                                     </div>
                                 </div>
                                 {user.role === 'ADMIN' && (
-                                    <button 
-                                        onClick={handleHammerDown} 
-                                        className="mt-4 w-full py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] bg-green-600 text-black text-lg md:text-xl font-[1000] italic uppercase border-b-4 border-slate-950 shrink-0"
-                                    >
+                                    <button onClick={handleHammerDown} className="mt-4 w-full py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] bg-green-600 text-black text-lg md:text-xl font-[1000] italic uppercase border-b-4 border-slate-950 shrink-0">
                                         {highestBidderId ? "🔨 HAMMER DOWN" : "⏭️ SKIP PLAYER"}
                                     </button>
                                 )}
                             </div>
 
-                            {/* BIDDING ARENA */}
                             <div className="col-span-12 lg:col-span-7 flex flex-col gap-4 lg:gap-6 min-h-0 order-2">
-                                {/* CURRENT BID CARD */}
                                 <div className="bg-slate-900 border border-white/5 rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shrink-0 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
                                     <div>
                                         <p className="text-blue-500 font-black tracking-[0.3em] text-[8px] md:text-[10px] uppercase mb-1 md:mb-2">Current Valuation</p>
@@ -219,9 +218,9 @@ const AuctionHub = ({
                                     </div>
                                 </div>
 
-                                {/* TEAM GRID */}
-                                <div className="flex-1 bg-slate-900/20 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 min-h-0">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 max-h-[400px] lg:max-h-none overflow-y-auto pr-2 content-start">
+                                <div className="flex-1 bg-slate-900/20 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 min-h-0 overflow-hidden">
+                                    {/* APPLIED 'no-scrollbar' CLASS HERE */}
+                                    <div className="no-scrollbar grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 h-full max-h-[400px] lg:max-h-none overflow-y-auto content-start">
                                         {teams.map(team => {
                                             const isLeading = String(highestBidderId) === String(team.id);
                                             const isDuelist = (activeDuelists || []).includes(team.id);
@@ -245,15 +244,12 @@ const AuctionHub = ({
                                                         <span className={`text-[7px] md:text-[8px] font-black uppercase mb-1 truncate w-full text-center px-2 ${isLeading ? 'text-white' : 'text-slate-400'}`}>
                                                             {team.name}
                                                         </span>
-                                                        <div className={`font-black uppercase italic leading-none text-sm md:text-base text-white`}>
+                                                        <div className="font-black uppercase italic leading-none text-sm md:text-base text-white">
                                                             {isLeading ? 'HOLD' : isLowBudget ? 'OUT' : 'BID'}
                                                         </div>
                                                         <div className={`text-[8px] md:text-[9px] font-bold mt-1 ${isLeading ? 'text-white/80' : 'text-slate-400'}`}>
                                                             ₹{(team.budget / 100000).toFixed(1)}L
                                                         </div>
-                                                        {!isLeading && (
-                                                            <div className={`absolute bottom-2 w-6 h-0.5 md:h-1 rounded-full ${team.color} opacity-50`}></div>
-                                                        )}
                                                     </button>
                                                     {isDuelist && !isLeading && (
                                                         <button onClick={() => handleGiveUp(team.id)} className="mt-1 py-1 text-[7px] font-black uppercase rounded-lg bg-red-500/10 text-red-500 border border-red-500/10 transition-all">
@@ -277,6 +273,7 @@ const AuctionHub = ({
     );
 };
 
+// ... (Rest of RoundOverlay and SoldOverlay components remain unchanged)
 const RoundOverlay = ({ currentRound, onClose }) => (
     <div className="fixed inset-0 z-[500] bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-6xl md:text-9xl font-[1000] italic uppercase text-white mb-6 tracking-tighter">Round {currentRound}</h2>

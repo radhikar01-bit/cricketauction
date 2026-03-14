@@ -12,6 +12,7 @@ import Login from './components/LoginScreen';
 import Footer from './components/Footer';
 import ConditionalHeader from './components/ConditionalHeader';
 import Squads from './components/Squads';
+import PlanningTab from './components/PlanningTab';
 
 // --- Data Imports ---
 import { 
@@ -189,7 +190,7 @@ function App() {
                                     } />
                                 </>
                             )}
-
+                            <Route path="/admin/planning" element={<PlanningTab />} />
                             <Route path="*" element={<Navigate to="/" />} />
                         </Routes>
                     </div>
