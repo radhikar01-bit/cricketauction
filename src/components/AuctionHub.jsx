@@ -1,7 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import PlayerCard from './PlayerCard';
 
-
 const AuctionHub = ({
     teams = [],
     currentIndex = 0,
@@ -132,16 +131,16 @@ const AuctionHub = ({
 
     if (!auctionType) {
         return (
-            <div className="h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-white font-sans">
-                <h1 className="text-7xl font-black italic uppercase mb-12">Select League</h1>
-                <div className="grid grid-cols-2 gap-8 w-full max-w-4xl">
-                    <button onClick={() => setAuctionType('mens')} className="p-16 rounded-[3rem] bg-slate-900 border border-blue-500/20 hover:bg-slate-800 transition-colors text-center">
-                        <h2 className="text-5xl font-black italic uppercase">Men's</h2>
-                        <p className="text-blue-400 mt-2 font-black uppercase text-xs tracking-widest">IPL 2026 EDITION</p>
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 text-white font-sans">
+                <h1 className="text-4xl md:text-7xl font-black italic uppercase mb-8 md:mb-12 text-center">Select League</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl">
+                    <button onClick={() => setAuctionType('mens')} className="p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] bg-slate-900 border border-blue-500/20 hover:bg-slate-800 transition-colors text-center">
+                        <h2 className="text-3xl md:text-5xl font-black italic uppercase">Men's</h2>
+                        <p className="text-blue-400 mt-2 font-black uppercase text-[10px] tracking-widest">IPL 2026 EDITION</p>
                     </button>
-                    <button onClick={() => setAuctionType('womens')} className="p-16 rounded-[3rem] bg-slate-900 border border-pink-500/20 hover:bg-slate-800 transition-colors text-center">
-                        <h2 className="text-5xl font-black italic uppercase">Women's</h2>
-                        <p className="text-pink-400 mt-2 font-black uppercase text-xs tracking-widest">WPL 2026 EDITION</p>
+                    <button onClick={() => setAuctionType('womens')} className="p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] bg-slate-900 border border-pink-500/20 hover:bg-slate-800 transition-colors text-center">
+                        <h2 className="text-3xl md:text-5xl font-black italic uppercase">Women's</h2>
+                        <p className="text-pink-400 mt-2 font-black uppercase text-[10px] tracking-widest">WPL 2026 EDITION</p>
                     </button>
                 </div>
             </div>
@@ -149,31 +148,31 @@ const AuctionHub = ({
     }
 
     return (
-        <div className="h-screen w-full bg-slate-950 text-white overflow-hidden flex flex-col relative">
+        <div className="min-h-screen w-full bg-slate-950 text-white flex flex-col relative overflow-x-hidden">
             {/* COMPACT HEADER */}
-            <header className="h-14 flex items-center justify-between px-6 bg-slate-900 border-b border-white/5 shrink-0 z-20">
+            <header className="h-14 flex items-center justify-between px-4 md:px-6 bg-slate-900 border-b border-white/5 shrink-0 z-20 sticky top-0">
                 <button onClick={() => setAuctionType(null)} className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 flex items-center gap-2">
-                    <span className="text-lg">←</span> Exit Arena
+                    <span>←</span> <span className="hidden sm:inline">Exit Arena</span>
                 </button>
-                <div className="px-4 py-1 rounded-full bg-slate-800 border border-white/10 text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">
+                <div className="px-3 py-1 rounded-full bg-slate-800 border border-white/10 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">
                     {auctionType} Live • Round {currentRound}
                 </div>
             </header>
 
-            <main className="flex-1 overflow-hidden px-4 py-4 lg:px-8 flex flex-col min-h-0">
+            <main className="flex-1 p-4 lg:px-8 flex flex-col min-h-0">
                 {!currentPlayer ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center">
-                        <h2 className="text-7xl font-[1000] italic uppercase text-slate-200">Auction Complete</h2>
-                        <button onClick={() => setAuctionType(null)} className="mt-8 px-10 py-5 bg-white text-black rounded-full font-black uppercase italic text-lg shadow-2xl">Return to Lobby</button>
+                    <div className="flex-1 flex flex-col items-center justify-center text-center">
+                        <h2 className="text-4xl md:text-7xl font-[1000] italic uppercase text-slate-200">Auction Complete</h2>
+                        <button onClick={() => setAuctionType(null)} className="mt-8 px-8 py-4 bg-white text-black rounded-full font-black uppercase italic text-sm md:text-lg shadow-2xl">Return to Lobby</button>
                     </div>
                 ) : (
-                    <div className="max-w-[1600px] mx-auto w-full flex flex-col h-90 min-h-0">
-                        {/* TOP SECTION: PLAYER + BIDDING */}
-                        <div className="grid grid-cols-12 gap-6 flex-[2] min-h-0 mb-6">
+                    <div className="max-w-[1600px] mx-auto w-full flex flex-col min-h-0">
+                        {/* MAIN LAYOUT: GRID ON DESKTOP, COLUMN ON MOBILE */}
+                        <div className="grid grid-cols-12 gap-4 lg:gap-6 min-h-0 mb-6">
                             
                             {/* PLAYER HERO */}
-                            <div className="col-span-12 lg:col-span-5 flex flex-col min-h-0">
-                                <div className="flex-1 bg-slate-900/60 rounded-[3rem] border border-white/5 p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
+                            <div className="col-span-12 lg:col-span-5 flex flex-col min-h-0 order-1">
+                                <div className="aspect-[4/3] lg:aspect-auto lg:flex-1 bg-slate-900/60 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
                                     <div className="w-full h-full flex flex-col justify-center">
                                         <PlayerCard 
                                             player={currentPlayer} currentRound={currentRound} availableCount={availableCount} 
@@ -181,14 +180,14 @@ const AuctionHub = ({
                                             currentBid={currentBid} highestBidderId={highestBidderId} bidIncrement={BID_INCREMENT} 
                                         />
                                     </div>
-                                    <div className="absolute bottom-4 text-[9px] font-black uppercase tracking-[0.3em] text-slate-600">
+                                    <div className="absolute bottom-2 md:bottom-4 text-[8px] font-black uppercase tracking-[0.3em] text-slate-600">
                                         PROSPECT {currentIndex + 1} OF {availableCount}
                                     </div>
                                 </div>
                                 {user.role === 'ADMIN' && (
                                     <button 
                                         onClick={handleHammerDown} 
-                                        className="mt-4 w-full py-5 rounded-[2rem] bg-green-600 text-black text-xl font-[1000] italic uppercase border-b-4 border-slate-950 shrink-0"
+                                        className="mt-4 w-full py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] bg-green-600 text-black text-lg md:text-xl font-[1000] italic uppercase border-b-4 border-slate-950 shrink-0"
                                     >
                                         {highestBidderId ? "🔨 HAMMER DOWN" : "⏭️ SKIP PLAYER"}
                                     </button>
@@ -196,31 +195,33 @@ const AuctionHub = ({
                             </div>
 
                             {/* BIDDING ARENA */}
-                            <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 min-h-0">
-                                <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-8 shrink-0 shadow-2xl flex justify-between items-center">
+                            <div className="col-span-12 lg:col-span-7 flex flex-col gap-4 lg:gap-6 min-h-0 order-2">
+                                {/* CURRENT BID CARD */}
+                                <div className="bg-slate-900 border border-white/5 rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shrink-0 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
                                     <div>
-                                        <p className="text-blue-500 font-black tracking-[0.3em] text-[10px] uppercase mb-2">Current Valuation</p>
-                                        <div className="text-7xl font-[1000] tracking-tighter leading-none text-white">
-                                            <span className="text-2xl text-slate-500 font-bold mr-1 italic">₹</span>
+                                        <p className="text-blue-500 font-black tracking-[0.3em] text-[8px] md:text-[10px] uppercase mb-1 md:mb-2">Current Valuation</p>
+                                        <div className="text-4xl md:text-6xl lg:text-7xl font-[1000] tracking-tighter leading-none text-white">
+                                            <span className="text-xl md:text-2xl text-slate-500 font-bold mr-1 italic">₹</span>
                                             {currentBid.toLocaleString()}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-slate-500 font-black text-[9px] uppercase mb-2 tracking-widest">Leading Bidder</p>
+                                    <div className="sm:text-right w-full sm:w-auto">
+                                        <p className="text-slate-500 font-black text-[8px] md:text-[9px] uppercase mb-1 md:mb-2 tracking-widest">Leading Bidder</p>
                                         {highestBidderId ? (
-                                            <div className={`px-8 py-3 rounded-2xl text-xl font-black uppercase italic shadow-xl ring-1 ring-white/20 ${teams.find(t => t.id === highestBidderId)?.color}`}>
+                                            <div className={`px-4 py-2 md:px-8 md:py-3 rounded-xl md:rounded-2xl text-base md:text-xl font-black uppercase italic shadow-xl ring-1 ring-white/20 ${teams.find(t => t.id === highestBidderId)?.color}`}>
                                                 {teams.find(t => t.id === highestBidderId)?.name}
                                             </div>
                                         ) : (
-                                            <div className="px-6 py-4 bg-white/5 rounded-2xl border border-white/10 text-slate-600 font-bold text-[10px] uppercase tracking-[0.2em]">
+                                            <div className="px-4 py-3 bg-white/5 rounded-xl border border-white/10 text-slate-600 font-bold text-[8px] md:text-[10px] uppercase tracking-[0.2em]">
                                                 Awaiting Bid
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="flex-1 bg-slate-900/20 rounded-[3rem] border border-white/5 p-6 min-h-0">
-                                    <div className="grid grid-cols-4 xl:grid-cols-5 gap-3 h-full overflow-y-auto pr-2 custom-scrollbar content-start">
+                                {/* TEAM GRID */}
+                                <div className="flex-1 bg-slate-900/20 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 min-h-0">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 max-h-[400px] lg:max-h-none overflow-y-auto pr-2 content-start">
                                         {teams.map(team => {
                                             const isLeading = String(highestBidderId) === String(team.id);
                                             const isDuelist = (activeDuelists || []).includes(team.id);
@@ -233,23 +234,29 @@ const AuctionHub = ({
                                                     <button
                                                         onClick={() => handleBid(team.id)}
                                                         disabled={isDisabled}
-                                                        className={`relative flex-1 flex flex-col items-center justify-center py-5 rounded-[2rem] border-2 transition-all ${
-                                                            isLeading ? 'bg-white border-white scale-105 z-10 shadow-2xl' : 
-                                                            isDuelist ? 'bg-slate-800 border-blue-500' : 'bg-slate-900 border-white/5 hover:border-white/20'
+                                                        className={`relative flex-1 flex flex-col items-center justify-center py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all ${
+                                                            isLeading 
+                                                            ? `${team.color} border-white scale-105 z-10 shadow-2xl` 
+                                                            : isDuelist 
+                                                            ? 'bg-slate-800 border-blue-500' 
+                                                            : 'bg-slate-900 border-white/5 hover:border-white/20'
                                                         }`}
                                                     >
-                                                        <span className={`text-[8px] font-black uppercase mb-1 truncate w-full text-center px-2 ${isLeading ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                        <span className={`text-[7px] md:text-[8px] font-black uppercase mb-1 truncate w-full text-center px-2 ${isLeading ? 'text-white' : 'text-slate-400'}`}>
                                                             {team.name}
                                                         </span>
-                                                        <div className={`font-black uppercase italic leading-none text-base ${isLeading ? 'text-slate-950' : 'text-white'}`}>
+                                                        <div className={`font-black uppercase italic leading-none text-sm md:text-base text-white`}>
                                                             {isLeading ? 'HOLD' : isLowBudget ? 'OUT' : 'BID'}
                                                         </div>
-                                                        <div className={`text-[9px] font-bold mt-1 ${isLeading ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                        <div className={`text-[8px] md:text-[9px] font-bold mt-1 ${isLeading ? 'text-white/80' : 'text-slate-400'}`}>
                                                             ₹{(team.budget / 100000).toFixed(1)}L
                                                         </div>
+                                                        {!isLeading && (
+                                                            <div className={`absolute bottom-2 w-6 h-0.5 md:h-1 rounded-full ${team.color} opacity-50`}></div>
+                                                        )}
                                                     </button>
                                                     {isDuelist && !isLeading && (
-                                                        <button onClick={() => handleGiveUp(team.id)} className="mt-2 py-1 text-[8px] font-black uppercase rounded-lg bg-red-500/10 text-red-500 border border-red-500/10 hover:bg-red-500/20 transition-all">
+                                                        <button onClick={() => handleGiveUp(team.id)} className="mt-1 py-1 text-[7px] font-black uppercase rounded-lg bg-red-500/10 text-red-500 border border-red-500/10 transition-all">
                                                             FOLD
                                                         </button>
                                                     )}
@@ -260,9 +267,6 @@ const AuctionHub = ({
                                 </div>
                             </div>
                         </div>
-
-                        {/* BOTTOM SECTION: RECENTLY SOLD */}
-                        
                     </div> 
                 )}
             </main>
@@ -274,24 +278,24 @@ const AuctionHub = ({
 };
 
 const RoundOverlay = ({ currentRound, onClose }) => (
-    <div className="fixed inset-0 z-[500] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
-        <h2 className="text-9xl font-[1000] italic uppercase text-white mb-6 tracking-tighter">Round {currentRound}</h2>
-        <button onClick={onClose} className="px-14 py-6 bg-white text-black rounded-full font-black uppercase italic text-xl shadow-2xl">Enter Arena →</button>
+    <div className="fixed inset-0 z-[500] bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-6xl md:text-9xl font-[1000] italic uppercase text-white mb-6 tracking-tighter">Round {currentRound}</h2>
+        <button onClick={onClose} className="px-10 py-5 bg-white text-black rounded-full font-black uppercase italic text-lg shadow-2xl">Enter Arena →</button>
     </div>
 );
 
 const SoldOverlay = ({ data, onClose }) => (
-    <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/95 transition-all duration-500">
-        <div className="relative text-center p-6">
-            <h2 className="text-5xl font-black italic uppercase text-white/30 mb-2 tracking-[0.2em]">PLAYER SOLD</h2>
-            <div className="bg-slate-900 border border-white/10 rounded-[3.5rem] p-14 mb-8 shadow-2xl relative">
-                <div className="absolute -top-4 -right-4 bg-yellow-400 text-black px-4 py-1 font-black italic rounded-lg">DEAL!</div>
-                <h3 className="text-6xl font-black uppercase italic mb-8 text-white tracking-tighter">{data.playerName}</h3>
-                <div className={`px-14 py-6 rounded-3xl text-4xl font-black uppercase italic shadow-lg ${data.teamColor} text-white`}>
+    <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/95 p-4 transition-all duration-500">
+        <div className="relative text-center w-full max-w-lg">
+            <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white/30 mb-2 tracking-[0.2em]">PLAYER SOLD</h2>
+            <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-14 mb-8 shadow-2xl relative">
+                <div className="absolute -top-3 -right-3 bg-yellow-400 text-black px-3 py-1 text-xs md:text-sm font-black italic rounded-lg">DEAL!</div>
+                <h3 className="text-4xl md:text-6xl font-black uppercase italic mb-8 text-white tracking-tighter">{data.playerName}</h3>
+                <div className={`px-6 py-4 md:px-14 md:py-6 rounded-2xl md:rounded-3xl text-2xl md:text-4xl font-black uppercase italic shadow-lg ${data.teamColor} text-white`}>
                     {data.teamName}
                 </div>
             </div>
-            <button onClick={onClose} className="px-14 py-6 bg-white text-black rounded-full font-black uppercase italic text-sm tracking-widest opacity-50 hover:opacity-100">Close</button>
+            <button onClick={onClose} className="px-10 py-4 bg-white text-black rounded-full font-black uppercase italic text-xs tracking-widest opacity-50 hover:opacity-100">Close</button>
         </div>
     </div>
 );
