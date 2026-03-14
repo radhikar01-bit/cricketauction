@@ -220,7 +220,7 @@ const AuctionHub = ({
 
                                 <div className="flex-1 bg-slate-900/20 rounded-[2rem] md:rounded-[3rem] border border-white/5 p-4 md:p-6 min-h-0 overflow-hidden">
                                     {/* APPLIED 'no-scrollbar' CLASS HERE */}
-                                    <div className="no-scrollbar grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 h-full max-h-[400px] lg:max-h-none overflow-y-auto content-start">
+                                    <div className="no-scrollbar grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 h-full max-h-[400px] lg:max-h-none overflow-y-auto content-start p-4">
                                         {teams.map(team => {
                                             const isLeading = String(highestBidderId) === String(team.id);
                                             const isDuelist = (activeDuelists || []).includes(team.id);
@@ -233,11 +233,11 @@ const AuctionHub = ({
                                                     <button
                                                         onClick={() => handleBid(team.id)}
                                                         disabled={isDisabled}
-                                                        className={`relative flex-1 flex flex-col items-center justify-center py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all ${
+                                                        className={`relative flex-1 flex flex-col items-center justify-center py-4 md:py-5 m-1 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all ${
                                                             isLeading 
                                                             ? `${team.color} border-white scale-105 z-10 shadow-2xl` 
                                                             : isDuelist 
-                                                            ? 'bg-slate-800 border-blue-500' 
+                                                            ? 'bg-slate-800 border-blue-500 z-10' 
                                                             : 'bg-slate-900 border-white/5 hover:border-white/20'
                                                         }`}
                                                     >
